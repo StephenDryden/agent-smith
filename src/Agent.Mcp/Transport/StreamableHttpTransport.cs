@@ -47,15 +47,14 @@ public sealed class StreamableHttpTransport(string url, bool allowSse = true, in
 
         if (resp.Content.Headers.ContentType?.MediaType == "text/event-stream")
         {
-            // TODO: parse SSE events and yield JSON-RPC messages
             await foreach (var item in ReadSseAsync(resp, ct))
                 yield return item;
         }
         else
         {
             var json = await resp.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            var doc = JsonDocument.Parse(json);
-            yield return doc; // placeholder
+            foreach (var parsed in ParseJsonRpc(json))
+                yield return parsed;
         }
     }
 
@@ -65,10 +64,16 @@ public sealed class StreamableHttpTransport(string url, bool allowSse = true, in
         using var reader = new StreamReader(stream, Encoding.UTF8);
         string? line;
         var sb = new StringBuilder();
+        string? eventName = null;
         while (!reader.EndOfStream && (line = await reader.ReadLineAsync()) is not null)
         {
             if (ct.IsCancellationRequested) yield break;
-            if (line.StartsWith("data:"))
+            if (line.StartsWith("event:"))
+            {
+                // event: <name>
+                eventName = line.AsSpan(6).Trim().ToString();
+            }
+            else if (line.StartsWith("data:"))
             {
                 sb.AppendLine(line.AsSpan(5).Trim().ToString());
             }
@@ -76,10 +81,74 @@ public sealed class StreamableHttpTransport(string url, bool allowSse = true, in
             {
                 var data = sb.ToString().Trim();
                 sb.Clear();
+                if (string.Equals(data, "[DONE]", StringComparison.OrdinalIgnoreCase))
+                {
+                    // graceful end of stream
+                    yield break;
+                }
                 if (!string.IsNullOrEmpty(data))
-                    yield return data; // placeholder yields raw data lines
+                {
+                    foreach (var parsed in ParseJsonRpc(data))
+                        yield return parsed;
+                }
+                eventName = null;
             }
         }
+    }
+
+    private static IEnumerable<object> ParseJsonRpc(string jsonOrLine)
+    {
+        // The response can be a single object or an array of objects. Objects can be responses or notifications.
+        List<object> results = new();
+        if (string.IsNullOrWhiteSpace(jsonOrLine)) return results;
+
+        using JsonDocument? doc = SafeParse(jsonOrLine);
+        if (doc is null) { results.Add(jsonOrLine); return results; }
+
+        if (doc.RootElement.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var el in doc.RootElement.EnumerateArray())
+                results.AddRange(ParseJsonElement(el));
+        }
+        else
+        {
+            results.AddRange(ParseJsonElement(doc.RootElement));
+        }
+        return results;
+    }
+
+    private static IEnumerable<object> ParseJsonElement(JsonElement el)
+    {
+        // Heuristics: if property "id" exists (null or string) and one of result/error present => response
+        // if no id but method present => notification
+        List<object> results = new();
+        try
+        {
+            if (el.ValueKind == JsonValueKind.Object)
+            {
+                var hasId = el.TryGetProperty("id", out _);
+                var hasMethod = el.TryGetProperty("method", out _);
+                if (hasId)
+                {
+                    var resp = el.Deserialize<JsonRpcResponse>();
+                    if (resp is not null) { results.Add(resp); return results; }
+                }
+                if (!hasId && hasMethod)
+                {
+                    var notif = el.Deserialize<JsonRpcNotification>();
+                    if (notif is not null) { results.Add(notif); return results; }
+                }
+            }
+        }
+        catch { }
+        // Fallback to raw JsonDocument for unknown shapes
+        results.Add(el.Clone());
+        return results;
+    }
+
+    private static JsonDocument? SafeParse(string json)
+    {
+        try { return JsonDocument.Parse(json); } catch { return null; }
     }
 
     public ValueTask DisposeAsync()
