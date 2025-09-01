@@ -16,7 +16,7 @@ COPY src/Agent.Core/Agent.Core.csproj src/Agent.Core/
 COPY src/Agent.Mcp/Agent.Mcp.csproj src/Agent.Mcp/
 COPY src/Agent.Providers/Agent.Providers.csproj src/Agent.Providers/
 COPY src/Agent.Template/Agent.Template.csproj src/Agent.Template/
-RUN dotnet restore agent-smith.sln
+RUN dotnet restore src/Agent.Template/Agent.Template.csproj
 
 # build
 COPY . ./
