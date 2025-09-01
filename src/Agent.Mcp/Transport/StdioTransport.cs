@@ -6,7 +6,7 @@ using Agent.Mcp.Protocol;
 
 namespace Agent.Mcp.Transport;
 
-public sealed class StdioTransport(string command, string[] args, IReadOnlyDictionary<string,string>? env = null, string? workingDir = null) : IMcpTransport
+public sealed class StdioTransport(string command, string[] args, IReadOnlyDictionary<string, string>? env = null, string? workingDir = null) : IMcpTransport
 {
     private Process? _proc;
     private StreamWriter? _stdin;
@@ -51,9 +51,19 @@ public sealed class StdioTransport(string command, string[] args, IReadOnlyDicti
     public async IAsyncEnumerable<object> ReceiveAsync([EnumeratorCancellation] CancellationToken ct = default)
     {
         if (_stdout is null) yield break;
-        string? line;
-        while (!ct.IsCancellationRequested && (line = await _stdout.ReadLineAsync()) is not null)
+        while (!ct.IsCancellationRequested)
         {
+            string? line = null;
+            try
+            {
+                var readTask = _stdout.ReadLineAsync();
+                line = await readTask.WaitAsync(ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                yield break; // respect cancellation
+            }
+            if (line is null) yield break; // stream closed
             if (string.IsNullOrWhiteSpace(line)) continue;
             foreach (var parsed in ParseLine(line))
                 yield return parsed;
