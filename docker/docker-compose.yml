@@ -8,7 +8,7 @@ services:
         CONFIG_FILE: configs/slite.agent.json
     image: agent-smith:slite
     container_name: agent-smith-slite
-  environment:
+    environment:
       - SLITE_API_KEY=${SLITE_API_KEY}
       - GITHUB_MODELS_TOKEN=${GITHUB_MODELS_TOKEN}
       - AGENT_CONFIG_PATH=/app/config/agent.json
@@ -23,7 +23,7 @@ services:
         CONFIG_FILE: configs/newrelic.agent.json
     image: agent-smith:newrelic
     container_name: agent-smith-newrelic
-  environment:
+    environment:
       - GITHUB_MODELS_TOKEN=${GITHUB_MODELS_TOKEN}
       - AGENT_CONFIG_PATH=/app/config/agent.json
     ports:
