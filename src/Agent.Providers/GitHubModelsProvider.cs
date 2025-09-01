@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -5,9 +6,9 @@ using Agent.Core;
 
 namespace Agent.Providers;
 
-public sealed class GitHubModelsProvider(string token, string? baseUrl = null) : IModelProvider, IDisposable
+public sealed class GitHubModelsProvider(string token, string? baseUrl = null, HttpMessageHandler? handler = null) : IModelProvider, IDisposable
 {
-    private readonly HttpClient _http = new();
+    private readonly HttpClient _http = handler is null ? new HttpClient() : new HttpClient(handler, disposeHandler: false);
     private readonly string _base = string.IsNullOrWhiteSpace(baseUrl) ? "https://models.github.ai" : baseUrl.TrimEnd('/');
     private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
 

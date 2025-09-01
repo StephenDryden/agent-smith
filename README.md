@@ -1,3 +1,5 @@
+[![CI](https://github.com/StephenDryden/agent-smith/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/StephenDryden/agent-smith/actions/workflows/ci.yml)
+
 # agent-smith
 AI agent template (.NET 8) that exposes an OpenAI-style chat API and connects to Model Context Protocol (MCP) servers over stdio or streamable HTTP (SSE). It’s config-driven (one JSON per agent), containerized (one image per config), and includes diagnostics to list/call MCP tools for easy integration testing.
 

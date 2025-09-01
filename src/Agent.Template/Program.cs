@@ -210,3 +210,9 @@ static string EnvSubstitute(string input)
         return val ?? m.Value;
     });
 }
+
+// Marker type for WebApplicationFactory tests
+namespace Agent.Template
+{
+    public sealed class ProgramMarker { }
+}
