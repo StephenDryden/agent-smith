@@ -15,12 +15,12 @@ This document captures the final decisions and a repeatable set of instructions 
   - No authentication for now; placeholders wired for future bearer auth.
 
 - MCP transports (to external MCP servers)
-  - Streamable HTTP: compliant with spec (Accept includes `application/json, text/event-stream`), supports SSE for POST responses. Also supports optional GET “listening” in v1.
+  - Streamable HTTP: compliant with spec (Accept includes `application/json, text/event-stream`), supports SSE for POST responses. Optional GET “listening” is deferred.
   - stdio: newline-delimited JSON-RPC; child process lifecycle handled by the agent.
   - Transport is selected via config per agent.
 
 - Slite MCP support
-  - Use stdio via Node-based `slite-mcp` (launched with `npx`).
+  - Use stdio via Node-based `slite-mcp` CLI (npm package: `slite-mcp-server`, launched with `npx`).
   - Node/npm included in the agent image for Slite builds.
 
 - Provider for LLM
@@ -67,7 +67,7 @@ agent-smith/
 │  └─ local-dev.md                  # docker-compose usage, curl examples
 │
 ├─ configs/
-│  ├─ slite.agent.json              # stdio to slite-mcp, persona + model
+│  ├─ slite.agent.json              # stdio to Slite MCP (CLI `slite-mcp`), persona + model
 │  ├─ newrelic.agent.json           # placeholder HTTP transport
 │  └─ samples/minimal.agent.json
 │
@@ -130,7 +130,7 @@ Minimal fields (JSON):
     },
     "stdio": {
       "command": "npx",
-      "args": ["-y", "slite-mcp"],
+  "args": ["-y", "slite-mcp"],
       "env": {
         "SLITE_API_KEY": "${SLITE_API_KEY}" // provided at runtime
       },
@@ -168,7 +168,7 @@ Example (Slite stdio):
     "transport": "stdio",
     "stdio": {
       "command": "npx",
-      "args": ["-y", "slite-mcp"],
+  "args": ["-y", "slite-mcp"],
       "env": { "SLITE_API_KEY": "${SLITE_API_KEY}" }
     }
   },
@@ -239,8 +239,8 @@ Example (New Relic placeholder / Streamable HTTP):
   - POST all client JSON-RPC messages to MCP endpoint.
   - Include `Accept: application/json, text/event-stream`.
   - Handle JSON responses or SSE event streams on POST.
-  - Support optional GET “listening” with `Accept: text/event-stream`.
-  - Handle `Mcp-Session-Id` header for sessions per spec.
+  - GET “listening” mode: deferred.
+  - `Mcp-Session-Id` session header: deferred (config placeholders exist).
 - stdio transport
   - Launch child process per config (e.g., `npx -y slite-mcp`).
   - JSON-RPC messages delimited by newlines; handle batches, cancellations, timeouts.
@@ -284,7 +284,7 @@ Example (New Relic placeholder / Streamable HTTP):
 
 - Do not commit secrets. Always pass tokens/keys via env or secret managers.
 - MCP Streamable HTTP security guidance recommends Origin checks and localhost binding for local servers. Placeholders are included; enable when needed.
-- SSE support is implemented for MCP compliance (POST responses and optional GET listening). The agent’s public API remains non-streaming in v1.
+- SSE support is implemented for MCP compliance (POST responses; GET listening deferred). The agent’s public API remains non-streaming in v1.
 
 ---
 

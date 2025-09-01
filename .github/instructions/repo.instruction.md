@@ -112,3 +112,34 @@ PR checklist (docs):
 - [ ] Updated root `README.md` (Quickstart, Endpoints, Notes, links)
 - [ ] Updated project-level READMEs if public behavior or responsibilities changed
 - [ ] Updated `configs/README.md` if adding new agent configs or patterns
+
+## Testing (keep tests in sync with behavior)
+
+Test projects live under `tests/` and cover each component:
+- `Agent.Core.Tests` – config defaults, DTOs, serialization
+- `Agent.Mcp.Tests` – JSON-RPC parsing and transport heuristics
+- `Agent.Providers.Tests` – provider request/response handling (mock + real API parsing via fake handlers)
+- `Agent.Template.Tests` – API surface using WebApplicationFactory (health, basic endpoint contracts)
+
+Run all tests locally:
+```
+dotnet test agent-smith.sln
+```
+
+When to update tests:
+- If you change HTTP endpoints (paths, request/response contract, status codes) → update `Agent.Template.Tests` and docs
+- If you change `Agent.Core` config/DTOs (names, defaults, JSON shape) → update `Agent.Core.Tests`
+- If you change MCP transport parsing or protocol handling → update `Agent.Mcp.Tests`
+- If you add/modify a provider (payloads, headers, parsing) → add/update tests in `Agent.Providers.Tests`
+
+Patterns used in tests:
+- API tests use `WebApplicationFactory<Agent.Template.ProgramMarker>` to boot the minimal API
+- Provider tests inject a custom `HttpMessageHandler` into `GitHubModelsProvider` to simulate responses
+- MCP parsing tests validate internal heuristics via reflection against private parsing helpers
+
+PR checklist (tests):
+- [ ] All tests pass locally (`dotnet test`)
+- [ ] New/changed behaviors are covered by unit tests
+- [ ] Provider changes include parsing/error-path tests (use fake `HttpMessageHandler`)
+- [ ] Endpoint changes include WebApplicationFactory tests
+- [ ] Config/DTO changes include serialization/defaults tests
