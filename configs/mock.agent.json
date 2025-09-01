@@ -1,0 +1,30 @@
+{
+    "agent": {
+        "name": "mock-agent",
+        "systemPrompt": "You are a friendly mock agent used for local testing."
+    },
+    "model": {
+        "provider": "mock",
+        "modelId": "mock/model",
+        "parameters": {
+            "temperature": 0.0
+        }
+    },
+    "mcp": {
+        "transport": "stdio",
+        "stdio": {
+            "command": "node",
+            "args": [
+                "-e",
+                "process.stdin.on('data',()=>{});"
+            ]
+        }
+    },
+    "runtime": {
+        "port": 8080
+    },
+    "security": {
+        "validateOrigin": false,
+        "apiAuthEnabled": false
+    }
+}
