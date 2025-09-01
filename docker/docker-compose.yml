@@ -1,0 +1,30 @@
+version: "3.9"
+services:
+  agent-slite:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        CONFIG_FILE: configs/slite.agent.json
+    image: agent-smith:slite
+    container_name: agent-smith-slite
+  environment:
+      - SLITE_API_KEY=${SLITE_API_KEY}
+      - GITHUB_MODELS_TOKEN=${GITHUB_MODELS_TOKEN}
+      - AGENT_CONFIG_PATH=/app/config/agent.json
+    ports:
+      - "8081:8080"
+
+  agent-newrelic:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        CONFIG_FILE: configs/newrelic.agent.json
+    image: agent-smith:newrelic
+    container_name: agent-smith-newrelic
+  environment:
+      - GITHUB_MODELS_TOKEN=${GITHUB_MODELS_TOKEN}
+      - AGENT_CONFIG_PATH=/app/config/agent.json
+    ports:
+      - "8082:8080"
