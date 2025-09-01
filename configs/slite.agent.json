@@ -1,0 +1,33 @@
+{
+    "agent": {
+        "name": "slite-agent",
+        "systemPrompt": "You are a Slite expert. Answer with clear steps and cite note IDs when relevant."
+    },
+    "model": {
+        "provider": "github-models",
+        "modelId": "openai/gpt-4o-mini",
+        "parameters": {
+            "temperature": 0.2
+        }
+    },
+    "mcp": {
+        "transport": "stdio",
+        "stdio": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "slite-mcp"
+            ],
+            "env": {
+                "SLITE_API_KEY": "${SLITE_API_KEY}"
+            }
+        }
+    },
+    "runtime": {
+        "port": 8080
+    },
+    "security": {
+        "validateOrigin": false,
+        "apiAuthEnabled": false
+    }
+}

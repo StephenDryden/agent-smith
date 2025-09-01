@@ -1,0 +1,31 @@
+{
+    "agent": {
+        "name": "newrelic-agent",
+        "systemPrompt": "You are a New Relic expert. Provide accurate NRQL and troubleshooting steps."
+    },
+    "model": {
+        "provider": "github-models",
+        "modelId": "openai/gpt-4o-mini",
+        "parameters": {
+            "temperature": 0.2
+        }
+    },
+    "mcp": {
+        "transport": "streamable-http",
+        "http": {
+            "url": "http://newrelic-mcp.local/mcp",
+            "allowSse": true,
+            "timeoutMs": 60000
+        },
+        "session": {
+            "useSessionHeader": true
+        }
+    },
+    "runtime": {
+        "port": 8080
+    },
+    "security": {
+        "validateOrigin": false,
+        "apiAuthEnabled": false
+    }
+}
