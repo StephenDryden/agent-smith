@@ -69,6 +69,7 @@ agent-smith/
 ├─ configs/
 │  ├─ slite.agent.json              # stdio to Slite MCP (CLI `slite-mcp`), persona + model
 │  ├─ newrelic.agent.json           # placeholder HTTP transport
+│  ├─ commander.agent.json           # Agent Commander config
 │  └─ samples/minimal.agent.json
 │
 ├─ src/
@@ -76,13 +77,15 @@ agent-smith/
 │  ├─ Agent.Core/
 │  ├─ Agent.Mcp/
 │  ├─ Agent.Providers/
-│  └─ Agent.Aws/
+│  ├─ Agent.Aws/
+│  └─ Agent.Commander/
 │
 ├─ tests/
 │  ├─ Agent.Template.Tests/
 │  ├─ Agent.Core.Tests/
 │  ├─ Agent.Mcp.Tests/
-│  └─ Agent.Providers.Tests/
+│  ├─ Agent.Providers.Tests/
+│  └─ Agent.Commander.Tests/
 │
 ├─ docker/
 │  ├─ Dockerfile
@@ -204,6 +207,25 @@ Example (New Relic placeholder / Streamable HTTP):
 }
 ```
 
+Example (Agent Commander):
+
+```json
+{
+  "agents": [
+    {
+      "name": "slite",
+      "endpoint": "http://localhost:8081/mcp/call",
+      "capabilities": ["ask", "search"]
+    },
+    {
+      "name": "newrelic",
+      "endpoint": "http://localhost:8082/mcp/call",
+      "capabilities": ["monitor", "alert"]
+    }
+  ]
+}
+```
+
 ---
 
 ## Scaffolding instructions (repeatable)
@@ -220,6 +242,7 @@ Example (New Relic placeholder / Streamable HTTP):
   - `src/Agent.Mcp` (transports + client)
   - `src/Agent.Providers` (GitHub Models, Slite/NewRelic placeholders)
   - `src/Agent.Aws` (future helpers)
+  - `src/Agent.Commander` (Agent Commander service)
 - Add corresponding test projects under `tests/`.
 - Add `Directory.Build.props` with nullable and warnings-as-errors.
 - Add `Directory.Packages.props` for central NuGet versions.
@@ -277,6 +300,57 @@ Example (New Relic placeholder / Streamable HTTP):
       ]
     }'
   ```
+
+---
+
+## Agent Commander
+
+### Responsibilities
+The Agent Commander is a standalone service that acts as the primary interface for users to interact with multiple agents. It accepts natural language input, determines which agents to query, and aggregates responses into a human-readable format. The Agent Commander provides real-time feedback and logs all interactions.
+
+### Architecture
+- **Standalone Service**: Implemented as a lightweight ASP.NET Core Minimal API.
+- **Agent Registry**: Maintains metadata about available agents (e.g., name, endpoint, capabilities).
+- **Concurrency**: Sends requests to agents concurrently to improve performance.
+- **Response Aggregation**: Combines responses from multiple agents, generates a summary, and includes detailed responses with metadata.
+- **Real-Time Feedback**: Uses Server-Sent Events (SSE) or WebSockets to provide updates to the user.
+
+### Interaction Flow
+1. User sends a natural language request to the Agent Commander.
+2. The Agent Commander determines which agents to query based on the input.
+3. Requests are sent to agents concurrently via `/mcp/call`.
+4. Responses are aggregated, and a summary is generated.
+5. The user receives real-time feedback during processing.
+6. The final response includes both a summary and detailed results with metadata.
+
+### Configuration
+- **File**: `configs/commander.agent.json`
+- **Example**:
+  ```json
+  {
+    "agents": [
+      {
+        "name": "slite",
+        "endpoint": "http://localhost:8081/mcp/call",
+        "capabilities": ["ask", "search"]
+      },
+      {
+        "name": "newrelic",
+        "endpoint": "http://localhost:8082/mcp/call",
+        "capabilities": ["monitor", "alert"]
+      }
+    ]
+  }
+  ```
+
+### Setup Instructions
+1. Add the Agent Commander project under `src/Agent.Commander`.
+2. Define the agent registry and populate it by querying `/mcp/tools` at startup.
+3. Implement natural language processing to determine which agents to query.
+4. Implement concurrent requests to agents and response aggregation.
+5. Add real-time feedback using SSE or WebSockets.
+6. Write unit, integration, and end-to-end tests.
+7. Update documentation to include the Agent Commander.
 
 ---
 
