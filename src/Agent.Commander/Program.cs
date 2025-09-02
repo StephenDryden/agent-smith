@@ -21,6 +21,9 @@ builder.Services.AddSingleton(agentRegistry);
 // Add RequestParser
 builder.Services.AddSingleton(new RequestParser(agentRegistry));
 
+// Add AgentCommunicator
+builder.Services.AddSingleton(new AgentCommunicator(new HttpClient()));
+
 var app = builder.Build();
 
 // Initialize AgentRegistry
