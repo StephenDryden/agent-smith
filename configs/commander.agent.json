@@ -1,0 +1,14 @@
+{
+  "agents": [
+    {
+      "name": "slite",
+      "endpoint": "http://localhost:8081/mcp/call",
+      "capabilities": ["ask", "search"]
+    },
+    {
+      "name": "newrelic",
+      "endpoint": "http://localhost:8082/mcp/call",
+      "capabilities": ["monitor", "alert"]
+    }
+  ]
+}
