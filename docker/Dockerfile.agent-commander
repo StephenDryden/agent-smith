@@ -1,0 +1,37 @@
+# Use the .NET SDK image to build and run the application
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /app
+
+# Copy the project files
+COPY src/Agent.Commander/Agent.Commander.csproj src/Agent.Commander/
+COPY Directory.Packages.props .
+COPY Directory.Build.props .
+COPY global.json .
+
+# Restore dependencies
+RUN dotnet restore src/Agent.Commander/Agent.Commander.csproj
+
+# Copy the entire source code
+COPY src/Agent.Commander/ src/Agent.Commander/
+
+# Build the application
+RUN dotnet publish src/Agent.Commander/Agent.Commander.csproj -c Release -o /out
+
+# Use the runtime image to run the application
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+
+# Install curl for debugging purposes
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Copy the published output
+COPY --from=build /out .
+
+# Copy the configuration file
+COPY configs/commander.agent.json /app/configs/commander.agent.json
+
+# Expose the default port
+EXPOSE 8080
+
+# Run the application
+ENTRYPOINT ["dotnet", "Agent.Commander.dll"]

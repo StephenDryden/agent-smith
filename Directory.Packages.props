@@ -10,5 +10,7 @@
   <PackageVersion Include="FluentAssertions" Version="8.6.0" />
   <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.10" />
   <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+  <PackageVersion Include="Moq" Version="4.18.2" />
+  <PackageVersion Include="Castle.Core" Version="5.1.0" />
   </ItemGroup>
 </Project>

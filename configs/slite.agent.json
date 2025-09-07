@@ -16,7 +16,7 @@
             "command": "npx",
             "args": [
                 "-y",
-                "slite-mcp"
+                "slite-mcp-server"
             ],
             "env": {
                 "SLITE_API_KEY": "${SLITE_API_KEY}"
