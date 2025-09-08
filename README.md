@@ -159,16 +159,16 @@ curl -sS -X POST http://localhost:8080/v1/chat \
 CI
 - Pull requests trigger build/test and Docker image builds (see `.github/workflows/ci.yml`).
 
-### Querying the Agent Commander
+### Querying the Agent Orchestrator
 
-The Agent Commander aggregates responses from multiple agents and provides real-time feedback. It includes endpoints for health checks and listing discovered agents.
+The Agent Orchestrator aggregates responses from multiple agents and provides real-time feedback. It includes endpoints for health checks and listing discovered agents.
 
 #### Using Docker Compose
 1. Start the services:
    ```bash
    docker-compose up
    ```
-2. Query the Agent Commander:
+2. Query the Agent Orchestrator:
    - **Health Check**:
      ```bash
      curl -X GET http://localhost:8083/health
@@ -178,9 +178,9 @@ The Agent Commander aggregates responses from multiple agents and provides real-
      curl -X GET http://localhost:8083/agents
      ```
 
-#### Interacting with the Slite Agent via the Agent Commander
+#### Interacting with the Slite Agent via the Agent Orchestrator
 1. Ensure the Slite agent is running (http://localhost:8081).
-2. Send a message to the Agent Commander to query the Slite agent:
+2. Send a message to the Agent Orchestrator to query the Slite agent:
    ```bash
    curl -sS -X POST http://localhost:8083/mcp/call -H 'Content-Type: application/json' -d '{"name":"ask-slite","arguments":{"question":"show me information on the team structure?"}}' | jq .
    ```

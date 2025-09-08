@@ -29,15 +29,15 @@ services:
   #   ports:
   #     - "8082:8080"
 
-  agent-commander:
+  agent-orchestrator:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.agent-commander
-    image: agent-smith:commander
-    container_name: agent-smith-commander
+      dockerfile: docker/Dockerfile.agent-orchestrator
+    image: agent-smith:orchestrator
+    container_name: agent-smith-orchestrator
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
       - "8083:8080"
     volumes:
-      - ../configs/commander.agent.json:/app/configs/commander.agent.json
+      - ../configs/orchestrator.agent.json:/app/configs/orchestrator.agent.json

@@ -7,7 +7,7 @@ export GITHUB_MODELS_TOKEN="${GITHUB_MODELS_TOKEN:-}"
 
 docker compose -f "$COMPOSE_FILE" up --build -d
 
-echo "Agents running: slite on :8081, newrelic on :8082, commander on :8083"
+echo "Agents running: slite on :8081, newrelic on :8082, orchestrator on :8083"
 
 # Function to check health and print /tools result
 check_agent() {
@@ -27,11 +27,10 @@ check_agent() {
   fi
 }
 
-# Fetch and display tools available via the Commander Agent
-fetch_commander_tools() {
+fetch_orchestrator_tools() {
   local port=8083
 
-  echo "Fetching tools available via the Commander Agent..."
+  echo "Fetching tools available via the Orchestrator Agent..."
   local tools_response
   tools_response=$(curl -m 5 -sS "http://localhost:$port/tools")
 
@@ -39,11 +38,11 @@ fetch_commander_tools() {
     echo "Tools available via connected agents:"
     echo "$tools_response" | jq -r 'to_entries[] | "Agent: \(.key), Tools: \(.value | join(", "))"'
   else
-    echo "Failed to fetch tools from the Commander Agent."
+    echo "Failed to fetch tools from the Orchestrator Agent."
   fi
 }
 
 # Check health and tools for each agent
 check_agent "slite" 8081
 #check_agent "newrelic" 8082
-fetch_commander_tools
+fetch_orchestrator_tools
